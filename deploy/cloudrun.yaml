@@ -1,0 +1,16 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: gcp-cost-scanner
+spec:
+  template:
+    spec:
+      containers:
+        - image: gcr.io/PROJECT_ID/cost-scanner
+          env:
+            - name: GCP_PROJECT
+              value: "PROJECT_ID"
+            - name: SLACK_WEBHOOK_URL
+              value: "https://hooks.slack.com/services/XXX/YYY/ZZZ"
+          ports:
+            - containerPort: 8080
