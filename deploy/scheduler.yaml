@@ -1,0 +1,6 @@
+name: daily-cost-scan
+schedule: "0 9 * * *"
+timeZone: "America/Toronto"
+httpTarget:
+  uri: https://YOUR-CLOUD-RUN-URL
+  httpMethod: GET
