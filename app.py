@@ -40,7 +40,7 @@ def run_scans():
             text=f'New scan results:\n\nVMs: {findings['vms']}\nDisks: {findings['disks']}\nIPs: {findings['ips']}'
         )
     except SlackApiError as e:
-        print(f'Slack error: {e}'}
+        print(f'Slack error: {e}')
 
 if __name__ == '__main__':
     run_scans()
