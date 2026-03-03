@@ -1,21 +1,5 @@
-FROM python:3.11-slim
-
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl \
-    ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
-
+FROM python:3.9-slim
 WORKDIR /app
-
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
 COPY . .
-
-ENV PORT=8080
-EXPOSE 8080
-
+RUN pip install -r requirements.txt
 CMD ["python", "app.py"]
