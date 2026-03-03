@@ -1,42 +1,46 @@
-from flask import Flask, jsonify
-from scanners.compute import scan_stopped_instances
-from scanners.disks import scan_unattached_disks
-from scanners.addresses import scan_unused_addresses
-from reporting.slack import send_slack_report
 import os
+import google.cloud.compute_v1 as compute
+import google.cloud.disks_v1 as disks
+from slack_sdk import WebClient
+from slack_sdk.errors import SlackApiError
 
-app = Flask(__name__)
+# Initialize Slack client
+slack_token = os.getenv('SLACK_WEBHOOK_URL')
+slack_client = WebClient(slack_token)
 
-PROJECT_ID = os.environ.get("GCP_PROJECT")
+# Scanner functions
 
-@app.route("/")
-def run_scan():
-    if not PROJECT_ID:
-        return jsonify({"error": "GCP_PROJECT environment variable not set"}), 500
+def scan_vms():
+    # Implement Compute Engine scanner
+    pass
 
-    stopped = scan_stopped_instances(PROJECT_ID)
-    disks = scan_unattached_disks(PROJECT_ID)
-    ips = scan_unused_addresses(PROJECT_ID)
 
-    summary = {
-        "stopped_instances_count": len(stopped),
-        "unattached_disks_count": len(disks),
-        "unused_static_ips_count": len(ips)
+def scan_disks():
+    # Implement Persistent Disk scanner
+    pass
+
+
+def scan_ips():
+    # Implement Static IP scanner
+    pass
+
+# Main orchestration
+
+def run_scans():
+    findings = {
+        'vms': scan_vms(),
+        'disks': scan_disks(),
+        'ips': scan_ips()
     }
+    
+    # Aggregate and send report
+    try:
+        slack_client.chat_postMessage(
+            channel='general',
+            text=f'New scan results:\n\nVMs: {findings['vms']}\nDisks: {findings['disks']}\nIPs: {findings['ips']}'
+        )
+    except SlackApiError as e:
+        print(f'Slack error: {e}'}
 
-    details = {
-        "project": PROJECT_ID,
-        "stopped_instances": stopped,
-        "unattached_disks": disks,
-        "unused_static_ips": ips
-    }
-
-    send_slack_report(summary, details)
-
-    return jsonify({
-        "summary": summary,
-        "details": details
-    })
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
+if __name__ == '__main__':
+    run_scans()
