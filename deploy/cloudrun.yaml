@@ -1,16 +1,26 @@
 apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
-  name: gcp-cost-scanner
+  name: cloud-cost-engine
+  annotations:
+    run.googleapis.com/ingress: all
 spec:
   template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/minScale: "0"
+        autoscaling.knative.dev/maxScale: "2"
     spec:
+      serviceAccountName: cloud-cost-engine-sa@PROJECT_ID.iam.gserviceaccount.com
       containers:
-        - image: gcr.io/PROJECT_ID/cost-scanner
+        - image: dmitryzhuravlev/cloud-optimization-engine:latest
           env:
-            - name: GCP_PROJECT
+            - name: GOOGLE_CLOUD_PROJECT
               value: "PROJECT_ID"
             - name: SLACK_WEBHOOK_URL
-              value: "https://hooks.slack.com/services/XXX/YYY/ZZZ"
+              valueSource:
+                secretKeyRef:
+                  secret: slack-webhook-url
+                  version: latest
           ports:
             - containerPort: 8080
