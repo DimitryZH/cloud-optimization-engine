@@ -67,7 +67,7 @@ resource "google_compute_instance" "vm_ci_runner_old" {
 
   scheduling {
     automatic_restart   = false
-    on_host_maintenance = "TERMINATE"
+    on_host_maintenance = "MIGRATE"
   }
 }
 
@@ -104,6 +104,6 @@ resource "google_compute_instance" "vm_test_env_paused" {
 
   scheduling {
     automatic_restart   = false
-    on_host_maintenance = "TERMINATE"
+    on_host_maintenance = "MIGRATE"
   }
 }
