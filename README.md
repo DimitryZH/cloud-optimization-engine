@@ -18,11 +18,11 @@ This implementation includes three production-ready scanners:
 
 These represent common cost leakage scenarios in real cloud environments.
 
-The system is intentionally modular and designed for extension.
+The design makes adding new scanners straightforward.
 
 ## Modular Architecture
 
-This project is built as a scanner-based modular engine.
+The runtime is organized as independent scanners feeding one reporting pipeline.
 
 Each scanner:
 
@@ -34,6 +34,19 @@ Each scanner:
 The current repository demonstrates the architecture using **three scanners only**.
 
 The broader **FinOps platform** evolution will expand this into a significantly larger system with **dozens of scanners covering major GCP services and enterprise cost-governance scenarios**.
+
+## Technology Stack
+
+- Python 3.9
+- Flask
+- Slack SDK
+- Docker
+- GitHub Actions
+- Terraform
+- Google Cloud Run
+- Cloud Scheduler
+- Secret Manager
+- Workload Identity Federation (OIDC)
 
 ## Architecture
 
@@ -93,7 +106,7 @@ The pipeline performs:
 - Cloud Run deployment
 - Zero manual credential usage
 
-**This three step validation confirms full end-to-end automation:**
+**This three-step validation confirms full end-to-end automation:**
 
 Terraform -> Cloud Infrastructure -> Cloud Run -> Scheduler -> Slack -> CI/CD
 
@@ -139,21 +152,6 @@ docs/
 README.md
 ```
 
-## Documentation
-
-This repository includes structured documentation:
-
-**deployment_guide.md**
-Deployment guide and execution runbook for infrastructure and CI/CD.
-
-**cost_analysis.md**
-Cost analysis and savings modeling (economic validation).
-
-**troubleshooting.md**
-Real-world debugging cases encountered during development.
-
-These documents reflect real implementation challenges and production-hardening steps.
-
 ## Run and Deploy
 
 For command-level setup and deployment steps, use:
@@ -162,31 +160,71 @@ For command-level setup and deployment steps, use:
 - [Troubleshooting](docs/troubleshooting.md)
 - [CI/CD Workflow](.github/workflows/deploy.yml)
 
+## Documentation
+
+This repository includes structured documentation:
+
+- [**deployment_guide.md**](docs/deployment_guide.md): Deployment guide and execution runbook for infrastructure and CI/CD.
+- [**cost_analysis.md**](docs/cost_analysis.md): Cost analysis and savings modeling (economic validation).
+- [**troubleshooting.md**](docs/troubleshooting.md): Real-world debugging cases encountered during development.
+
+These documents reflect real implementation challenges, validation experiments, and production-hardening steps.
+
+---
+
 ## Economic Validation
 
-This project was validated using real Terraform-provisioned infrastructure.
+This project was validated using real Terraform-provisioned infrastructure in a clean Google Cloud environment.
 
-During testing:
+During controlled experiments:
 
-- Idle VMs were detected
-- Unattached disks were identified
-- Reserved IP addresses were reported
+- Idle VMs were detected  
+- Unattached disks were identified  
+- Reserved static IP addresses were reported  
+- Infrastructure was scaled intentionally to measure cost growth  
 
-Cost impact was modeled using actual GCP pricing benchmarks and projected across daily, monthly, and annual scenarios.
+All financial data was taken from **Billing → Reports → Usage cost ($)**.
 
-> Full economic breakdown available in:
-**docs/cost_analysis.md**
+The engine demonstrates:
 
-This engine is designed not just for detection, but for measurable cost impact.
+- Real infrastructure cost accumulation  
+- Automated waste detection  
+- Linear cost growth when idle resources increase  
+- Monthly and annual financial projection modeling  
 
-The cost analysis document demonstrates:
+Full detailed breakdown available in:
 
-- Real infrastructure cost accumulation
-- Savings modeling based on detected idle resources
-- Scaling scenarios (daily -> monthly -> annual projections)
-- Infrastructure waste validation experiments
+[cost_analysis.md](docs/cost_analysis.md)
 
-The architecture supports expansion into full FinOps governance workflows.
+---
+
+## Cost Growth Validation
+
+### Weekly Cost Comparison (Baseline vs Scaled)
+
+![Cost Comparison](docs/assets/cost-comparison.png)
+
+The experiment demonstrates measurable cost increase after scaling idle infrastructure.
+
+---
+
+### Annual Waste Projection
+
+![Annual Projection](docs/assets/annual-projection.png)
+
+Even small unmanaged environments can accumulate significant yearly waste.
+
+---
+
+### Cost Breakdown (Scaled State)
+
+![Cost Breakdown](docs/assets/cost-breakdown.png)
+
+Static IP and persistent storage were the dominant contributors to waste exposure.
+
+---
+
+This validation confirms that Cloud Optimization Engine is not only a detection tool, but a measurable financial governance foundation.
 
 ## Project Evolution
 
@@ -219,19 +257,6 @@ The next iteration expands this architecture into a comprehensive FinOps platfor
 The current repository serves as the architectural foundation for that larger system.
 
 **The first and third stages can be found on my Upwork profile**.
-
-## Technology Stack
-
-- Python 3.9
-- Flask
-- Slack SDK
-- Docker
-- GitHub Actions
-- Terraform
-- Google Cloud Run
-- Cloud Scheduler
-- Secret Manager
-- Workload Identity Federation (OIDC)
 
 ## Author
 
