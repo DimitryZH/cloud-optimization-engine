@@ -1,12 +1,16 @@
 name: Deploy Cloud Cost Engine
 
 on:
+  # Deploy automatically when code lands on main.
   push:
     branches: ["main"]
+  # Also allow manual deployments from the Actions tab.
   workflow_dispatch:
 
 env:
+  # Docker image repository (Docker Hub).
   IMAGE_NAME: dmitryzhuravlev/cloud-optimization-engine
+  # Cloud Run service name to update.
   SERVICE_NAME: cloud-cost-engine
   REGION: us-central1
 
@@ -14,23 +18,29 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     permissions:
+      # Needed for checkout action.
       contents: read
+      # Needed for OIDC-based auth to Google Cloud.
       id-token: write
 
     steps:
       - name: Checkout
+        # Pull repository source code into the runner.
         uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
+      - name: Set up Docker Build
+        # Enable modern Docker builds and multi-platform support.
         uses: docker/setup-buildx-action@v3
 
       - name: Login to Docker Hub
+        # Authenticate so the workflow can push images.
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build and push image
+        # Build from ./app and publish tags for latest + this commit SHA.
         uses: docker/build-push-action@v6
         with:
           context: ./app
@@ -40,16 +50,20 @@ jobs:
             ${{ env.IMAGE_NAME }}:${{ github.sha }}
 
       - name: Authenticate to Google Cloud
+        # Exchange GitHub OIDC token for short-lived GCP credentials.
         uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ secrets.GCP_DEPLOY_SERVICE_ACCOUNT }}
 
       - name: Set up gcloud
+        # Install and configure gcloud CLI for deploy commands.
         uses: google-github-actions/setup-gcloud@v2
 
       - name: Deploy to Cloud Run
         run: |
+          # Deploy the commit-specific image and update runtime config:
+          # service account, project env var, and Slack secret binding.
           gcloud run deploy "${SERVICE_NAME}" \
             --project="${{ secrets.GCP_PROJECT_ID }}" \
             --region="${REGION}" \
